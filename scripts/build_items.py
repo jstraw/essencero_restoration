@@ -26,6 +26,55 @@ import logging
 import openpyxl  # excel plugin
 
 logger = logging.getLogger('build_items')
+items = []
+
+
+# ID,DBName,ScreenName,Type,Price,Sell,Weight,ATK,DEF,Range,Slot,Job,Class,Gender,Loc,wLV,eLV, Refineable,
+# View,{Script},{OnEquip_Script},{OnUnequip_Script}
+class item(object):
+    """item: Create an item that merges item_db, lua iteminfo and reconconciliation_db
+    The csvheaders list defines the item_db variable names (and allows for )
+    """
+    csvheaders = ['id', 'dbname', 'screenname', 'type', 'price', 'sell', 'weight', 'atk', 'def', 'range', 'slot',
+                  'job', 'class', 'gender', 'loc', 'wLV', 'eLV', 'refinable', 'view', 'script', 'onequip', 'onunequip']
+    luaheaders = ['unidentifiedDisplayName', 'unidentifiedResourceName', 'unidentifiedDescriptionName',
+                  'identifiedDisplayName', 'identifiedResourceName', 'identifiedDescriptionName', 'slotCount',
+                  'ClassNum']
+
+    def __init__(self, dbline):
+        db = dbline.split(',')
+        # We assume you've checked to see if the line/id is good.
+        for x in range(len(self.csvheaders)):
+            setattr(self, csvheaders[x], db[x])
+
+    def db_csv(self):
+        ret = []
+        for x in csvheaders:
+            ret.append(getattr(self, x))
+        return ','.join(ret)
+
+    def update_description(self):
+        """ Take the item_db info and generate an updated description"""
+        pass
+
+    def lua_output(self):
+        outlines = []
+
+        def formatline(tabct, text):
+            return "    " * tabct + text
+
+        outlines.append(formatline(1, "[{}] = {".format(self.id)))
+        for key in self.luaheaders:
+            if 'Description' not in key:
+                outlines.append(formatline(2, "{} = {},".format(key, getattr(self, key))))
+            else:
+                lines = getattr(self, key)
+                outlines.append(formatline(2, "{} = {".format(key)))
+                if isinstance(lines, list):
+                    outlines.extend([formatline(3, '"{}",'.format(x)) for x in lines])
+                else:
+                    outlines.append(formatline(3, '{}'.format(lines)))
+                outlines.append(2, '},')
 
 
 def main(args):
