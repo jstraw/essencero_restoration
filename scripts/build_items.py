@@ -53,9 +53,16 @@ class item(object):
             ret.append(getattr(self, x))
         return ','.join(ret)
 
+    def __job_to_string__(self):
+
     def update_description(self):
         """ Take the item_db info and generate an updated description"""
-        pass
+        weight = "Weight:^006600 {}^000000".format(self.weight)
+        if self.gender != 2:
+            gender = "Gender:^CC0000 {}^000000".format(("Female Only", "Male Only")[self.gender])
+        else:
+            gender = None
+        class_ = "Jobs:^6666CC {}^000000".format(self.__job_to_string__())
 
     def lua_output(self):
         outlines = []
